@@ -1,8 +1,14 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaModule } from './corePrisma/prisma.module';
+import { ProductsModule } from 'src/modules/products/products.module';
+import { CategoriesModule } from 'src/modules/categories/categories.module';
+import { OrdersController } from 'src/modules/orders/orders.controller';
+import { OrdersModule } from 'src/modules/orders/orders.module';
+import { UsersModule } from 'src/modules/users/users.module';
 
 
 @Module({
-  imports: [PrismaModule],
+  //import toate modelele
+  imports: [PrismaModule, ProductsModule, CategoriesModule, OrdersModule, UsersModule],
 })
 export class CoreModule { }
