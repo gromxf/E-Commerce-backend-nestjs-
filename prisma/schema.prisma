@@ -51,10 +51,12 @@ model Product {
 }
 
 model ProductImage {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   url       String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
   productId Int
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
 
   @@map("product_images")
 }

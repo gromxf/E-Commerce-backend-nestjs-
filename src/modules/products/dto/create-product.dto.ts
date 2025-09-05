@@ -16,10 +16,10 @@ export class CreateProductDto {
     @IsNumber()
     stock: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    images: string[];
+    images?: string[];
 
     @IsNotEmpty()
     @IsNumber()

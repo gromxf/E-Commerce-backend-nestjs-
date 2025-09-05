@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -24,8 +25,14 @@ export class ProductsController {
 
   // GET /products
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query('categoryId') categoryIds?: string | string[]) {
+    const categoryIdArray = categoryIds
+      ? Array.isArray(categoryIds)
+        ? categoryIds.map(id => parseInt(id, 10))
+        : [parseInt(categoryIds, 10)]
+      : undefined;
+
+    return this.productsService.findAll(categoryIdArray);
   }
 
   // GET /products/:id

@@ -8,15 +8,18 @@ export class ProductsService {
 
     // POST /products
     async create(createProductDto: CreateProductDto) {
+        // Ensure images array exists and is not empty
+        const images = createProductDto.images || [];
+
         return this.prisma.product.create({
             data: {
                 name: createProductDto.name,
                 description: createProductDto.description,
                 price: createProductDto.price,
                 stock: createProductDto.stock,
-                images: {
-                    create: createProductDto.images.map((url) => ({ url })),
-                },
+                images: images.length > 0 ? {
+                    create: images.map((url) => ({ url })),
+                } : undefined,
                 category: {
                     connect: { id: createProductDto.categoryId },
                 },
@@ -29,8 +32,13 @@ export class ProductsService {
     }
 
     // GET /products
-    async findAll() {
+    async findAll(categoryIds?: number[]) {
+        const whereClause = categoryIds && categoryIds.length > 0
+            ? { categoryId: { in: categoryIds } }
+            : {};
+
         return this.prisma.product.findMany({
+            where: whereClause,
             include: {
                 images: true,
                 category: true,
@@ -62,14 +70,17 @@ export class ProductsService {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
 
+        // Ensure images array exists if provided
+        const images = updateData.images || [];
+
         return this.prisma.product.update({
             where: { id },
             data: {
                 ...updateData,
-                images: updateData.images
+                images: images.length > 0
                     ? {
                         deleteMany: {}, // ștergem imaginile existente
-                        create: updateData.images.map((url) => ({ url })),
+                        create: images.map((url) => ({ url })),
                     }
                     : undefined,
             },
