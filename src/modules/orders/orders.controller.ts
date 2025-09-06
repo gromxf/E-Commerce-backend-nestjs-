@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PaymentInfoDto } from './dto/payment-info.dto';
+import { OrderItemDto } from './dto/order-item.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -43,5 +44,11 @@ export class OrdersController {
   @Post('payment-info')
   processPaymentInfo(@Body() paymentInfoDto: PaymentInfoDto) {
     return this.ordersService.processPaymentInfo(paymentInfoDto);
+  }
+
+  // POST /orders/validate-stock
+  @Post('validate-stock')
+  validateStock(@Body() body: { items: OrderItemDto[] }) {
+    return this.ordersService.validateStock(body.items);
   }
 }

@@ -9,14 +9,47 @@ export class OrdersService {
 
     // POST /orders
     async create(createOrderDto: CreateOrderDto) {
-        return this.prisma.order.create({
-            data: {
-                userId: createOrderDto.userId,
-                total: createOrderDto.total,
-                items: {
-                    create: createOrderDto.items
+        // Use a transaction to ensure both order creation and stock updates happen atomically
+        return this.prisma.$transaction(async (prisma) => {
+            // First, check if all products have sufficient stock
+            for (const item of createOrderDto.items) {
+                const product = await prisma.product.findUnique({
+                    where: { id: item.productId }
+                });
+
+                if (!product) {
+                    throw new NotFoundException(`Product with ID ${item.productId} not found`);
                 }
-            },
+
+                if (product.stock < item.quantity) {
+                    throw new Error(`Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`);
+                }
+            }
+
+            // Create the order
+            const order = await prisma.order.create({
+                data: {
+                    userId: createOrderDto.userId,
+                    total: createOrderDto.total,
+                    items: {
+                        create: createOrderDto.items
+                    }
+                },
+            });
+
+            // Update product stock for each item
+            for (const item of createOrderDto.items) {
+                await prisma.product.update({
+                    where: { id: item.productId },
+                    data: {
+                        stock: {
+                            decrement: item.quantity
+                        }
+                    }
+                });
+            }
+
+            return order;
         });
     }
 
@@ -95,6 +128,31 @@ export class OrdersService {
                 cardNumber: paymentInfoDto.cardNumber ? '****-****-****-' + paymentInfoDto.cardNumber.slice(-4) : null,
             },
             timestamp: new Date().toISOString()
+        };
+    }
+
+    // POST /orders/validate-stock
+    async validateStock(items: any[]) {
+        const errors: string[] = [];
+
+        for (const item of items) {
+            const product = await this.prisma.product.findUnique({
+                where: { id: item.productId }
+            });
+
+            if (!product) {
+                errors.push(`Product with ID ${item.productId} not found`);
+                continue;
+            }
+
+            if (product.stock < item.quantity) {
+                errors.push(`Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`);
+            }
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors
         };
     }
 
