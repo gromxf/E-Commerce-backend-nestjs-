@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/corePrisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { PaymentInfoDto } from './dto/payment-info.dto';
 
 @Injectable()
 export class OrdersService {
@@ -23,7 +24,12 @@ export class OrdersService {
     async findAll() {
         return this.prisma.order.findMany({
             include: {
-                items: true,
+                items: {
+                    include: {
+                        product: true
+                    }
+                },
+                user: true,
             },
         });
     }
@@ -68,6 +74,28 @@ export class OrdersService {
         }
 
         return this.prisma.order.delete({ where: { id } });
+    }
+
+    // POST /orders/payment-info
+    async processPaymentInfo(paymentInfoDto: PaymentInfoDto) {
+        // In a real application, you would process the payment here
+        // For now, we'll just return the payment info with a success status
+        return {
+            success: true,
+            message: 'Payment information processed successfully',
+            paymentInfo: {
+                firstName: paymentInfoDto.firstName,
+                lastName: paymentInfoDto.lastName,
+                email: paymentInfoDto.email,
+                address: paymentInfoDto.address,
+                city: paymentInfoDto.city,
+                zipCode: paymentInfoDto.zipCode,
+                paymentMethod: paymentInfoDto.paymentMethod || 'card',
+                // Don't return sensitive card information
+                cardNumber: paymentInfoDto.cardNumber ? '****-****-****-' + paymentInfoDto.cardNumber.slice(-4) : null,
+            },
+            timestamp: new Date().toISOString()
+        };
     }
 
 }

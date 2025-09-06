@@ -15,14 +15,24 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  role      String   @default("user") // user / admin
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   orders    Order[]
-  createdAt DateTime @default(now())
+  addresses Address[]
+  createdAt DateTime  @default(now())
 
   @@map("users")
+}
+
+model Address {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  street String
+  city   String
+  postal String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
 }
 
 model Category {
@@ -53,7 +63,7 @@ model Product {
 model ProductImage {
   id        Int      @id @default(autoincrement())
   url       String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dto/create-order.dto'
+import { CreateOrderDto } from './dto/create-order.dto';
+import { PaymentInfoDto } from './dto/payment-info.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -36,5 +37,11 @@ export class OrdersController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.ordersService.remove(id);
+  }
+
+  // POST /orders/payment-info
+  @Post('payment-info')
+  processPaymentInfo(@Body() paymentInfoDto: PaymentInfoDto) {
+    return this.ordersService.processPaymentInfo(paymentInfoDto);
   }
 }
