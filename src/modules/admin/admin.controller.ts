@@ -1,18 +1,18 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { JwtAuthGuard } from '../jwt/jwt-auth.guard';
 
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('dashboard')
   getDashboard() {
     return { message: 'Admin dashboard', at: new Date().toISOString() };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('data')
   getProtectedData() {
     return { stats: { users: 0, orders: 0, revenue: 0 } };

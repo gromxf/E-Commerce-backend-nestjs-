@@ -1,14 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/corePrisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { CloudinaryService } from '../../core/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly cloudinary: CloudinaryService,
+    ) { }
 
     // POST /products
     async create(createProductDto: CreateProductDto) {
-        const images = createProductDto.images || [];
+        const incomingImages = createProductDto.images || [];
+        const imageUrls: string[] = [];
+
+        for (const img of incomingImages) {
+            if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
+                imageUrls.push(img);
+            } else if (typeof img === 'string') {
+                const uploadedUrl = await this.cloudinary.uploadDataUrl(img);
+                imageUrls.push(uploadedUrl);
+            }
+        }
 
         return this.prisma.product.create({
             data: {
@@ -16,8 +30,8 @@ export class ProductsService {
                 description: createProductDto.description,
                 price: createProductDto.price,
                 stock: createProductDto.stock,
-                images: images.length > 0 ? {
-                    create: images.map((url) => ({ url })),
+                images: imageUrls.length > 0 ? {
+                    create: imageUrls.map((url) => ({ url })),
                 } : undefined,
                 category: {
                     connect: { id: createProductDto.categoryId },
@@ -69,17 +83,26 @@ export class ProductsService {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
 
-        // Ensure images array exists if provided
-        const images = updateData.images || [];
+        // Process images if provided
+        const incomingImages = updateData.images || [];
+        const imageUrls: string[] = [];
+        for (const img of incomingImages) {
+            if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
+                imageUrls.push(img);
+            } else if (typeof img === 'string') {
+                const uploadedUrl = await this.cloudinary.uploadDataUrl(img);
+                imageUrls.push(uploadedUrl);
+            }
+        }
 
         return this.prisma.product.update({
             where: { id },
             data: {
                 ...updateData,
-                images: images.length > 0
+                images: imageUrls.length > 0
                     ? {
-                        deleteMany: {}, // ștergem imaginile existente
-                        create: images.map((url) => ({ url })),
+                        deleteMany: {},
+                        create: imageUrls.map((url) => ({ url })),
                     }
                     : undefined,
             },

@@ -3,11 +3,11 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PaymentInfoDto } from './dto/payment-info.dto';
 import { OrderItemDto } from './dto/order-item.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../jwt/jwt-auth.guard';
 
 @Controller('orders')
-@UseGuards(AuthGuard)
+@UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) { }
   // POST /orders
