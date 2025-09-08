@@ -4,10 +4,12 @@ import { ProductsModule } from 'src/modules/products/products.module';
 import { CategoriesModule } from 'src/modules/categories/categories.module';
 import { OrdersModule } from 'src/modules/orders/orders.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { AdminModule } from 'src/modules/admin/admin.module';
 
 
 @Module({
   //import toate modelele
-  imports: [PrismaModule, ProductsModule, CategoriesModule, OrdersModule, UsersModule],
+  imports: [PrismaModule, ProductsModule, CategoriesModule, OrdersModule, UsersModule, AuthModule, AdminModule],
 })
 export class CoreModule { }

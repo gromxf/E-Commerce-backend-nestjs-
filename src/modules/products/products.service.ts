@@ -8,7 +8,6 @@ export class ProductsService {
 
     // POST /products
     async create(createProductDto: CreateProductDto) {
-        // Ensure images array exists and is not empty
         const images = createProductDto.images || [];
 
         return this.prisma.product.create({
