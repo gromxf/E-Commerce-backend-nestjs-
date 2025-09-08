@@ -35,6 +35,8 @@ export class AuthGuard implements CanActivate {
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
+    const cookieToken = (request as any).cookies?.['admin_jwt_token'];
+    if (cookieToken) return cookieToken;
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
