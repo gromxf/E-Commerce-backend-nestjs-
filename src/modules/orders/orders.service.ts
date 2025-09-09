@@ -35,6 +35,12 @@ export class OrdersService {
                         create: createOrderDto.items
                     }
                 },
+                include: {
+                    items: {
+                        include: { product: true }
+                    },
+                    user: true,
+                }
             });
 
             // Update product stock for each item
@@ -50,6 +56,55 @@ export class OrdersService {
             }
 
             return order;
+        });
+    }
+
+    // POST /orders/draft
+    async createDraft(item: { productId: number; quantity: number; price: number }) {
+        const order = await this.prisma.order.create({
+            data: ({
+                paymentStatus: 'UNPAID',
+                total: item.price * item.quantity,
+                items: { create: [{ productId: item.productId, quantity: item.quantity, price: item.price }] },
+            } as any),
+            include: { items: { include: { product: true } } },
+        });
+        return order;
+    }
+
+    // PUT /orders/:id/finalize
+    async finalize(
+        id: number,
+        body: {
+            userId: number;
+            total: number;
+            items: {
+                productId: number;
+                quantity: number;
+                price: number
+            }[];
+            paymentInfo: PaymentInfoDto
+        },
+    ) {
+        return this.prisma.$transaction(async (prisma) => {
+            await prisma.orderItem.deleteMany({ where: { orderId: id } });
+
+            // update order
+            const updated = await prisma.order.update({
+                where: { id },
+                data: {
+                    userId: body.userId,
+                    total: body.total,
+                    items: { create: body.items },
+                    paymentStatus: 'PAID' as any,
+                },
+                include: {
+                    items: { include: { product: true } },
+                    user: true,
+                },
+            });
+
+            return updated;
         });
     }
 
@@ -111,8 +166,18 @@ export class OrdersService {
 
     // POST /orders/payment-info
     async processPaymentInfo(paymentInfoDto: PaymentInfoDto) {
-        // In a real application, you would process the payment here
-        // For now, we'll just return the payment info with a success status
+        // Validate order exists
+        const order = await this.prisma.order.findUnique({ where: { id: paymentInfoDto.orderId } });
+        if (!order) {
+            throw new NotFoundException(`Order with ID ${paymentInfoDto.orderId} not found`);
+        }
+
+        // Here you'd integrate with a real PSP. Assume success for now.
+        const updated = await this.prisma.order.update({
+            where: { id: paymentInfoDto.orderId },
+            data: ({ paymentStatus: 'PAID' } as any),
+        });
+
         return {
             success: true,
             message: 'Payment information processed successfully',
@@ -124,10 +189,10 @@ export class OrdersService {
                 city: paymentInfoDto.city,
                 zipCode: paymentInfoDto.zipCode,
                 paymentMethod: paymentInfoDto.paymentMethod || 'card',
-                // Don't return sensitive card information
                 cardNumber: paymentInfoDto.cardNumber ? '****-****-****-' + paymentInfoDto.cardNumber.slice(-4) : null,
             },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            order: updated,
         };
     }
 

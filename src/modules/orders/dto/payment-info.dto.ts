@@ -1,6 +1,10 @@
-import { IsNotEmpty, IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsOptional, IsNumber } from 'class-validator';
 
 export class PaymentInfoDto {
+    @IsNotEmpty()
+    @IsNumber()
+    orderId: number;
+
     @IsNotEmpty()
     @IsString()
     firstName: string;

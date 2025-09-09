@@ -54,4 +54,25 @@ export class OrdersController {
   validateStock(@Body() body: { items: OrderItemDto[] }) {
     return this.ordersService.validateStock(body.items);
   }
+
+  // POST /orders/draft
+  @Post('draft')
+  createDraft(@Body() body: { item: OrderItemDto }) {
+    return this.ordersService.createDraft(body.item);
+  }
+
+  // PUT /orders/:id/finalize
+  @Put(':id/finalize')
+  finalize(
+    @Param('id', ParseIntPipe) id: number,
+    @Body()
+    body: {
+      userId: number;
+      total: number;
+      items: OrderItemDto[];
+      paymentInfo: PaymentInfoDto;
+    },
+  ) {
+    return this.ordersService.finalize(id, body);
+  }
 }
