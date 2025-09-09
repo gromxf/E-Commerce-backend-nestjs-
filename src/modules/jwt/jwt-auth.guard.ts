@@ -18,6 +18,10 @@ export class JwtAuthGuard implements CanActivate {
             const payload = await this.jwtService.verifyAsync(token, {
                 secret: jwtConstants.secret,
             });
+            // only allow admin role
+            if (payload?.role !== 'admin') {
+                throw new UnauthorizedException('Invalid token role');
+            }
             request.user = payload;
             return true;
         } catch {
