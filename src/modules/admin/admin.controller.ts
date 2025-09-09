@@ -9,12 +9,21 @@ export class AdminController {
   @UseGuards(JwtAuthGuard)
   @Get('dashboard')
   getDashboard() {
-    return { message: 'Admin dashboard', at: new Date().toISOString() };
+    return {
+      message: 'Admin dashboard',
+      at: new Date().toISOString()
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('data')
   getProtectedData() {
-    return { stats: { users: 0, orders: 0, revenue: 0 } };
+    return {
+      stats: {
+        users: 0,
+        orders: 0,
+        revenue: 0
+      }
+    };
   }
 }

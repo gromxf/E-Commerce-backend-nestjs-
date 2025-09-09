@@ -9,14 +9,14 @@ export class UsersService {
     // POST /users
 
     async create(createUserDto: CreateUserDto) {
-        // Check if user already exists
+        // Check 
         const existingUser = await this.prisma.user.findUnique({
             where: { email: createUserDto.email },
             include: { addresses: true }
         });
 
         if (existingUser) {
-            // User exists, just add new addresses if any
+            // User exists
             if (createUserDto.Address && createUserDto.Address.length > 0) {
                 await this.prisma.address.createMany({
                     data: createUserDto.Address.map(addr => ({
