@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { CoreModule } from './core/core.module';
 import cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
+import { CoreModule } from './core/core.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(CoreModule);

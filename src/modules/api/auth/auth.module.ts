@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { AdminModule } from '../admin/admin.module';
-import { JwtModule } from '../jwt/jwt.module';
+import { JwtModule } from 'src/modules/jwt/jwt.module';
 
 @Module({
   imports: [

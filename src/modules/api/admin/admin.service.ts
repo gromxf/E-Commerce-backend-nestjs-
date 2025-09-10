@@ -1,5 +1,5 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../../core/corePrisma/prisma.service';
+import { PrismaService } from '../../../core/corePrisma/prisma.service';
 import { CreateAdminDto } from '../auth/dto/create-admin.dto';
 import * as bcrypt from 'bcrypt';
 

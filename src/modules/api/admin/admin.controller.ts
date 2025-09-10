@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { JwtAuthGuard } from '../jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '../../jwt/jwt-auth.guard';
 
 @Controller('admin')
 export class AdminController {
