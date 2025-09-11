@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 
-import { PrismaService } from 'src/core/corePrisma/prisma.service';
-import { CloudinaryModule } from 'src/core/cloudinary/cloudinary.module';
 
+import { ImageModule } from './helper/imageH.module';
+
+@Global()
 @Module({
-  imports: [CloudinaryModule],
+  imports: [ImageModule],
   controllers: [ProductsController],
   providers: [ProductsService],
 })

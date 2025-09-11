@@ -1,28 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/core/corePrisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { CloudinaryService } from 'src/core/cloudinary/cloudinary.service';
+import { ImageService } from './helper/image.service';
 
 @Injectable()
 export class ProductsService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cloudinary: CloudinaryService,
+        private readonly imageService: ImageService,
     ) { }
+
+    private productInclude = {
+        images: true,
+        category: true,
+    };
 
     // POST /products
     async create(createProductDto: CreateProductDto) {
-        const incomingImages = createProductDto.images || [];
-        const imageUrls: string[] = [];
-
-        for (const img of incomingImages) {
-            if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
-                imageUrls.push(img);
-            } else if (typeof img === 'string') {
-                const uploadedUrl = await this.cloudinary.uploadDataUrl(img);
-                imageUrls.push(uploadedUrl);
-            }
-        }
+        const imageUrls = await this.imageService.processImages(createProductDto.images || []);
 
         return this.prisma.product.create({
             data: {
@@ -83,17 +78,7 @@ export class ProductsService {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
 
-        // Process images if provided
-        const incomingImages = updateData.images || [];
-        const imageUrls: string[] = [];
-        for (const img of incomingImages) {
-            if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
-                imageUrls.push(img);
-            } else if (typeof img === 'string') {
-                const uploadedUrl = await this.cloudinary.uploadDataUrl(img);
-                imageUrls.push(uploadedUrl);
-            }
-        }
+        const imageUrls = await this.imageService.processImages(updateData.images || []);
 
         return this.prisma.product.update({
             where: { id },
